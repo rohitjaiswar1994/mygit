@@ -1,26 +1,17 @@
 pipeline {
     agent { label 'built-in' }
     environment {
-        KUBECONFIG = credentials('kubeconfig')  // Reference your Kubernetes credentials in Jenkins
+        KUBECONFIG = credentials('kubeconfig')  // Must exist in Jenkins
     }
     stages {
-        stage('Checkout Code') {
+        stage('Test Kubernetes Access') {
             steps {
-                git branch: 'main', 
-                    url: 'https://github.com/rohitjaiswar1994/mygit.git'
+                sh 'kubectl get pods --all-namespaces'
             }
         }
-        stage('Build Docker Image') {
+        stage('Deploy') {
             steps {
-                sh 'docker build -t my-app:latest .'
-            }
-        }
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh '''
-                    kubectl apply -f k8s-deployment.yaml
-                    kubectl rollout status deployment/my-app
-                '''
+                sh 'kubectl apply -f k8s-deployment.yaml'
             }
         }
     }
